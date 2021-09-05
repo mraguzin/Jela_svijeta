@@ -14,9 +14,19 @@ use Symfony\Component\Routing\Annotation\Route;
 class DishController extends AbstractController
 {
     /**
+     * @Route("/meals", name="meals")
+     */
+    public function meals(Request $request): JsonResponse
+    {
+        
+    }
+
+    /**
      * @Route("/fake_dish_data", name="faker")
      */
     public function index(EntityManagerInterface $em, FakeDataGenerator $faker, Request $request): Response
+     // NOT USED due to the Faker library being incompatible with new Doctrine versions
+
     {
         // Three languages assumed for each translatable field by default: it, en, de
         $numDishes      = $request->query->get('numDishes', 10);

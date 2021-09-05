@@ -19,12 +19,12 @@ abstract class BaseFixture extends Fixture
         return substr($locale, 0, 2);
     }
 
-    public function foreachLocale(callable $f)
+    public static function foreachLocale(callable $f)
     {
         foreach (self::LOCALES as $locale)
         {
-            //$f($locale, $this->fakers[$locale]);
-            call_user_func_array($f, [$locale, &$this->fakers[$locale]]); //TODO: should use the above one instead!
+            //$f($locale, self::$fakers[$locale]);
+            call_user_func_array($f, [$locale, &self::$fakers[$locale]]);
         }
     }
 

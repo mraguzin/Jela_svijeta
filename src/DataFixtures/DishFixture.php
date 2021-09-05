@@ -11,6 +11,7 @@ use Doctrine\Persistence\ObjectManager;
 class DishFixture extends BaseFixture implements DependentFixtureInterface
 {
     public const NUM_DISHES = 10;
+    private const MAX_FAKE_TEXT_LEN = 2000;
 
     private $randomizer;
 
@@ -20,13 +21,14 @@ class DishFixture extends BaseFixture implements DependentFixtureInterface
         $this->randomizer = $urs;
     }
 
-    protected function doPerLocale($entity, string $locale, &$faker)
+    protected function doPerLocale($dish, string $locale, &$faker)
     {
-        // Nothing to do here.
+        $dish->translate(BaseFixture::localeToLanguage($locale))->setDescription($faker->text(self::MAX_FAKE_TEXT_LEN));
     }
 
     protected function entityFactory($dish, int $index)
     {
+        static $ii = 0;
         srand(self::SEED);
 
         $index = rand(0, CategoryFixture::NUM_CATEGORIES);
@@ -51,6 +53,12 @@ class DishFixture extends BaseFixture implements DependentFixtureInterface
         {
             $dish->addTag($this->getReference('Tag_' . $index));
         }
+
+        // BaseFixture::foreachLocale(function(string $locale, &$faker) use ($dish, &$ii) {
+        //     $dish->translate(BaseFixture::localeToLanguage($locale))->setDescription($faker->text(self::MAX_FAKE_TEXT_LEN)); //TODO: fix repeating fakes
+        //     //$dish->translate(BaseFixture::localeToLanguage($locale))->setDescription((string)($ii++));
+        // });
+        
     }
 
     protected function loadData(ObjectManager $om)
