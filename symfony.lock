@@ -1,4 +1,10 @@
 {
+    "behat/transliterator": {
+        "version": "v1.3.0"
+    },
+    "brick/math": {
+        "version": "0.9.3"
+    },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.3"
     },
@@ -23,6 +29,9 @@
     "doctrine/common": {
         "version": "3.1.2"
     },
+    "doctrine/data-fixtures": {
+        "version": "1.5.0"
+    },
     "doctrine/dbal": {
         "version": "2.13.2"
     },
@@ -43,6 +52,18 @@
             "config/packages/test/doctrine.yaml",
             "src/Entity/.gitignore",
             "src/Repository/.gitignore"
+        ]
+    },
+    "doctrine/doctrine-fixtures-bundle": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "e5b542d4ef47d8a003c91beb35650c76907f7e53"
+        },
+        "files": [
+            "src/DataFixtures/AppFixtures.php"
         ]
     },
     "doctrine/doctrine-migrations-bundle": {
@@ -88,6 +109,15 @@
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.5"
     },
+    "fzaninotto/faker": {
+        "version": "v1.9.2"
+    },
+    "gedmo/doctrine-extensions": {
+        "version": "v3.1.0"
+    },
+    "knplabs/doctrine-behaviors": {
+        "version": "2.2.0"
+    },
     "laminas/laminas-code": {
         "version": "4.4.2"
     },
@@ -96,6 +126,9 @@
     },
     "myclabs/deep-copy": {
         "version": "1.10.2"
+    },
+    "nette/utils": {
+        "version": "v3.2.3"
     },
     "nikic/php-parser": {
         "version": "v4.12.0"
@@ -162,6 +195,12 @@
     "psr/log": {
         "version": "1.1.4"
     },
+    "ramsey/collection": {
+        "version": "1.2.1"
+    },
+    "ramsey/uuid": {
+        "version": "4.2.1"
+    },
     "sebastian/cli-parser": {
         "version": "1.0.1"
     },
@@ -220,6 +259,18 @@
         },
         "files": [
             "config/packages/sensio_framework_extra.yaml"
+        ]
+    },
+    "stof/doctrine-extensions-bundle": {
+        "version": "1.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.2",
+            "ref": "6c1ceb662f8997085f739cd089bfbef67f245983"
+        },
+        "files": [
+            "config/packages/stof_doctrine_extensions.yaml"
         ]
     },
     "symfony/asset": {

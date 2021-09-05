@@ -1,0 +1,71 @@
+<?php
+
+namespace App\DataFixtures;
+
+use App\Entity\Dish;
+use App\Entity\Tag;
+use App\Service\RandomizerService;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Doctrine\Persistence\ObjectManager;
+
+class DishFixture extends BaseFixture implements DependentFixtureInterface
+{
+    public const NUM_DISHES = 10;
+
+    private $randomizer;
+
+    public function __construct(RandomizerService $urs)
+    {
+        parent::__construct();
+        $this->randomizer = $urs;
+    }
+
+    protected function doPerLocale($entity, string $locale, &$faker)
+    {
+        // Nothing to do here.
+    }
+
+    protected function entityFactory($dish, int $index)
+    {
+        srand(self::SEED);
+
+        $index = rand(0, CategoryFixture::NUM_CATEGORIES);
+        if ($index === CategoryFixture::NUM_CATEGORIES - 1)
+        {
+            $dish->setCategory(null);
+        }
+
+        else
+        {
+            $dish->setCategory($this->getReference('Category_' . $index));
+        }
+
+        $indices = $this->randomizer->getRandomArray(IngredientFixture::NUM_INGREDIENTS, 0, IngredientFixture::NUM_INGREDIENTS - 1);
+        foreach ($indices as $index)
+        {
+            $dish->addIngredient($this->getReference('Ingredient_' . $index));
+        }
+
+        $indices = $this->randomizer->getRandomArray(TagFixture::NUM_TAGS, 0, TagFixture::NUM_TAGS - 1);
+        foreach ($indices as $index)
+        {
+            $dish->addTag($this->getReference('Tag_' . $index));
+        }
+    }
+
+    protected function loadData(ObjectManager $om)
+    {
+        $this->createMany('Dish', self::NUM_DISHES);
+
+        $om->flush();
+    }
+
+    public function getDependencies()
+    {
+        return [
+            IngredientFixture::class,
+            CategoryFixture::class,
+            TagFixture::class
+        ];
+    }
+}
