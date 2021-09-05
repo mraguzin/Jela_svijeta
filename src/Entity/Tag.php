@@ -12,9 +12,10 @@ use Knp\DoctrineBehaviors\Model\Translatable\TranslatableTrait;
 /**
  * @ORM\Entity(repositoryClass=TagRepository::class)
  */
-class Tag implements TranslatableInterface
+class Tag implements TranslatableInterface, SerializableInterface
 {
     use TranslatableTrait;
+    use SerializableTrait;
 
     /**
      * @ORM\Id
@@ -28,15 +29,6 @@ class Tag implements TranslatableInterface
      */
     private $slug;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=Dish::class, mappedBy="tags")
-     */
-    private $dishes;
-
-    public function __construct()
-    {
-        $this->dishes = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -51,33 +43,6 @@ class Tag implements TranslatableInterface
     public function setSlug(string $slug): self
     {
         $this->slug = $slug;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Dish[]
-     */
-    public function getDishes(): Collection
-    {
-        return $this->dishes;
-    }
-
-    public function addDish(Dish $dish): self
-    {
-        if (!$this->dishes->contains($dish)) {
-            $this->dishes[] = $dish;
-            $dish->addTag($this);
-        }
-
-        return $this;
-    }
-
-    public function removeDish(Dish $dish): self
-    {
-        if ($this->dishes->removeElement($dish)) {
-            $dish->removeTag($this);
-        }
 
         return $this;
     }

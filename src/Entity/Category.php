@@ -12,10 +12,11 @@ use Knp\DoctrineBehaviors\Model\Translatable\TranslatableTrait;
 /**
  * @ORM\Entity(repositoryClass=CategoryRepository::class)
  */
-class Category implements TranslatableInterface
+class Category implements TranslatableInterface, SerializableInterface
 {
     use TranslatableTrait;
-    
+    use SerializableTrait;
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -27,16 +28,6 @@ class Category implements TranslatableInterface
      * @ORM\Column(type="string", length=255)
      */
     private $slug;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Dish::class, mappedBy="category")
-     */
-    private $dishes;
-
-    public function __construct()
-    {
-        $this->dishes = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -51,36 +42,6 @@ class Category implements TranslatableInterface
     public function setSlug(string $slug): self
     {
         $this->slug = $slug;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Dish[]
-     */
-    public function getDishes(): Collection
-    {
-        return $this->dishes;
-    }
-
-    public function addDish(Dish $dish): self
-    {
-        if (!$this->dishes->contains($dish)) {
-            $this->dishes[] = $dish;
-            $dish->setCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeDish(Dish $dish): self
-    {
-        if ($this->dishes->removeElement($dish)) {
-            // set the owning side to null (unless already changed)
-            if ($dish->getCategory() === $this) {
-                $dish->setCategory(null);
-            }
-        }
 
         return $this;
     }

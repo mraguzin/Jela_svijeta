@@ -28,11 +28,16 @@ class DishFixture extends BaseFixture implements DependentFixtureInterface
 
     protected function entityFactory($dish, int $index)
     {
-        static $ii = 0;
-        srand(self::SEED);
+        static $seeded = false;
+
+        if (!$seeded)
+        {
+            srand(self::SEED);
+            $seeded = true;
+        }
 
         $index = rand(0, CategoryFixture::NUM_CATEGORIES);
-        if ($index === CategoryFixture::NUM_CATEGORIES - 1)
+        if ($index === CategoryFixture::NUM_CATEGORIES)
         {
             $dish->setCategory(null);
         }
@@ -42,13 +47,13 @@ class DishFixture extends BaseFixture implements DependentFixtureInterface
             $dish->setCategory($this->getReference('Category_' . $index));
         }
 
-        $indices = $this->randomizer->getRandomArray(IngredientFixture::NUM_INGREDIENTS, 0, IngredientFixture::NUM_INGREDIENTS - 1);
+        $indices = $this->randomizer->getRandomArray(IngredientFixture::NUM_INGREDIENTS);
         foreach ($indices as $index)
         {
             $dish->addIngredient($this->getReference('Ingredient_' . $index));
         }
 
-        $indices = $this->randomizer->getRandomArray(TagFixture::NUM_TAGS, 0, TagFixture::NUM_TAGS - 1);
+        $indices = $this->randomizer->getRandomArray(TagFixture::NUM_TAGS);
         foreach ($indices as $index)
         {
             $dish->addTag($this->getReference('Tag_' . $index));

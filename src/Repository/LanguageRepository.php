@@ -19,6 +19,18 @@ class LanguageRepository extends ServiceEntityRepository
         parent::__construct($registry, Language::class);
     }
 
+    public function languageExists(string $language)
+    {
+        $result = $this->createQueryBuilder('l')
+            ->andWhere('l.id = :lang')
+            ->setParameter('lang', $language)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return ($result !== null);
+    }
+
     // /**
     //  * @return Language[] Returns an array of Language objects
     //  */

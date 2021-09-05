@@ -12,10 +12,11 @@ use Knp\DoctrineBehaviors\Model\Translatable\TranslatableTrait;
 /**
  * @ORM\Entity(repositoryClass=IngredientRepository::class)
  */
-class Ingredient implements TranslatableInterface
+class Ingredient implements TranslatableInterface, SerializableInterface
 {
     use TranslatableTrait;
-    
+    use SerializableTrait;
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -28,15 +29,6 @@ class Ingredient implements TranslatableInterface
      */
     private $slug;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=Dish::class, mappedBy="ingredients")
-     */
-    private $dishes;
-
-    public function __construct()
-    {
-        $this->dishes = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -51,33 +43,6 @@ class Ingredient implements TranslatableInterface
     public function setSlug(string $slug): self
     {
         $this->slug = $slug;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Dish[]
-     */
-    public function getDishes(): Collection
-    {
-        return $this->dishes;
-    }
-
-    public function addDish(Dish $dish): self
-    {
-        if (!$this->dishes->contains($dish)) {
-            $this->dishes[] = $dish;
-            $dish->addIngredient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeDish(Dish $dish): self
-    {
-        if ($this->dishes->removeElement($dish)) {
-            $dish->removeIngredient($this);
-        }
 
         return $this;
     }

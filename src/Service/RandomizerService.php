@@ -17,9 +17,13 @@ class RandomizerService
         }
     }
 
-    public static function getRandomArray(int $count, int $min, int $max): array
+    public static function getRandomArray(int $count, int $min=0, int $max=null): array
     {
         $result = [];
+        if ($max === null)
+        {
+            $max = $count - 1;
+        }
     
         for ($i = 0; $i < $count; ++$i)
         {

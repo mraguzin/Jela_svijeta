@@ -6,6 +6,8 @@ use App\Repository\DishRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\SerializableInterface;
+use App\Entity\SerializableTrait;
 use Knp\DoctrineBehaviors\Contract\Entity\SoftDeletableInterface;
 use Knp\DoctrineBehaviors\Contract\Entity\TimestampableInterface;
 use Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface;
@@ -17,11 +19,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass=DishRepository::class)
  */
-class Dish implements TimestampableInterface, TranslatableInterface, SoftDeletableInterface
+class Dish implements TimestampableInterface, TranslatableInterface, SoftDeletableInterface, SerializableInterface
 {
     use TimestampableTrait;
     use TranslatableTrait;
     use SoftDeletableTrait;
+    use SerializableTrait;
 
     /**
      * @ORM\Id
