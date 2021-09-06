@@ -9,7 +9,7 @@ use Knp\DoctrineBehaviors\Model\Translatable\TranslationTrait;
 /**
  * @ORM\Entity
  */
-class DishTranslation implements TranslationInterface
+class MealTranslation implements TranslationInterface
 {
     use TranslationTrait;
 

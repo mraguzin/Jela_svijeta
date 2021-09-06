@@ -2,15 +2,13 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Dish;
-use App\Entity\Tag;
 use App\Service\RandomizerService;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class DishFixture extends BaseFixture implements DependentFixtureInterface
+class MealFixture extends BaseFixture implements DependentFixtureInterface
 {
-    public const NUM_DISHES = 10;
+    public const NUM_MEALS = 10;
     private const MAX_FAKE_TEXT_LEN = 2000;
 
     private $randomizer;
@@ -63,7 +61,7 @@ class DishFixture extends BaseFixture implements DependentFixtureInterface
 
     protected function loadData(ObjectManager $om)
     {
-        $this->createMany('Dish', self::NUM_DISHES);
+        $this->createMany('Meal', self::NUM_MEALS);
 
         $om->flush();
     }

@@ -2,28 +2,23 @@
 
 namespace App\Repository;
 
-use App\Entity\Dish;
+use App\Entity\Meal;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @method Dish|null find($id, $lockMode = null, $lockVersion = null)
- * @method Dish|null findOneBy(array $criteria, array $orderBy = null)
- * @method Dish[]    findAll()
- * @method Dish[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
-class DishRepository extends ServiceEntityRepository
+
+class MealRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Dish::class);
+        parent::__construct($registry, Meal::class);
     }
 
     public function getNumberOfDishes(): int
     {
-        $dql = 'SELECT COUNT(d.id) FROM App\Entity\Dish d';
+        $dql = 'SELECT COUNT(d.id) FROM App\Entity\Meal d';
         $query = $this->getEntityManager()->createQuery($dql);
 
         return $query->getSingleScalarResult();
@@ -31,7 +26,7 @@ class DishRepository extends ServiceEntityRepository
 
     public function findAllFromRequest(array $fields)
     {
-        $dql = 'SELECT d FROM App\Entity\Dish d ';
+        $dql = 'SELECT d FROM App\Entity\Meal d ';
         if (!empty($fields['category']))
         {
             $dql .= 'LEFT JOIN d.category c ';
@@ -42,7 +37,7 @@ class DishRepository extends ServiceEntityRepository
         {
             $hasWhere = true;
             $dql .= 'WHERE d.id IN
-                (SELECT d1.id FROM App\Entity\Dish d1 JOIN d1.tags t1
+                (SELECT d1.id FROM App\Entity\Meal d1 JOIN d1.tags t1
                 WHERE t1.id IN (';
             $dql .= implode(',', $fields['tags']) . ') ';
             $dql .= 'GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) = ' . count($fields['tags']) . ') ';

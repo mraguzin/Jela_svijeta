@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Repository\DishRepository;
+use App\Repository\MealRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,9 +17,9 @@ use Knp\DoctrineBehaviors\Model\Translatable\TranslatableTrait;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass=DishRepository::class)
+ * @ORM\Entity(repositoryClass=MealRepository::class)
  */
-class Dish implements TimestampableInterface, TranslatableInterface, SoftDeletableInterface, SerializableInterface
+class Meal implements TimestampableInterface, TranslatableInterface, SoftDeletableInterface, SerializableInterface
 {
     use TimestampableTrait;
     use TranslatableTrait;
@@ -34,19 +34,19 @@ class Dish implements TimestampableInterface, TranslatableInterface, SoftDeletab
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="dishes")
+     * @ORM\ManyToOne(targetEntity=Category::class)
      * @Assert\NotNull
      */
     private $category;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Tag::class, inversedBy="dishes")
+     * @ORM\ManyToMany(targetEntity=Tag::class)
      * @Assert\NotBlank
      */
     private $tags;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Ingredient::class, inversedBy="dishes")
+     * @ORM\ManyToMany(targetEntity=Ingredient::class)
      * @Assert\NotBlank
      */
     private $ingredients;

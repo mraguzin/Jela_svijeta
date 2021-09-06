@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Language;
-use App\Repository\DishRepository;
+use App\Repository\MealRepository;
 use App\Repository\LanguageRepository;
 use App\Service\ArrayUrlService;
 use App\Service\FakeDataGenerator;
@@ -17,12 +17,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
-class DishController extends AbstractController
+class MealController extends AbstractController
 {
     /**
      * @Route("/meals", name="meals")
      */
-    public function meals(ArrayUrlService $aus, DishRepository $dishRepo, LanguageRepository $languageRepo, ValidatorService $validator, Request $request): JsonResponse
+    public function meals(ArrayUrlService $aus, MealRepository $dishRepo, LanguageRepository $languageRepo, ValidatorService $validator, Request $request): JsonResponse
     {
         $fields = $validator->validateFields($request, ['per_page', 'page', 'category', 'tags', 'with', 'lang', 'diff_time'],
                                                        ['integer', 'integer', 'string', 'array', 'array', 'string', 'integer'],
@@ -35,11 +35,6 @@ class DishController extends AbstractController
         {
             throw new BadRequestHttpException("The language '" . $fields['lang'] . "' does not exist in the database!");
         }
-
-        // if ($fields['page'] * $fields['per_page'] > $numDishes)
-        // {
-        //     $fields['page'] = 1;
-        // }
 
         $dishes = $dishRepo->findAllFromRequest($fields);
         $ignored = array_diff(['ingredients', 'category', 'tags'], $fields['with']);
@@ -78,17 +73,20 @@ class DishController extends AbstractController
             $obj->links->next = $this->generateUrl('meals', $escapedFields);
 
             $escapedFields['page'] = $obj->meta->currentPage;
-            $obj->links->self = $this->generateUrl('meals', $escapedFields);
+            //$obj->links->self = $this->generateUrl('meals', $escapedFields);
         }
 
         else
         {
             $obj->links->next = null;
-            $obj->links->self = null;
+            //$obj->links->self = null;
             $obj->links->prev = null;
         }
 
-        return new JsonResponse($obj);
+        $obj->links->self = $this->generateUrl('meals', $escapedFields);
+
+        $json = json_encode($obj, JSON_PRETTY_PRINT);
+        return new JsonResponse($json, 200, [], true);
     }
 
     /**

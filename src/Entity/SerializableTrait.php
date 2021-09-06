@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use ReflectionClass;
-use ReflectionProperty;
-use Doctrine\ORM\PersistentCollection;
 use stdClass;
 
 trait SerializableTrait
@@ -83,17 +81,17 @@ trait SerializableTrait
         if ($rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TimestampableInterface') && 
             $rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\SoftDeletableInterface') && $timestamp > 0)
         {
-            if ($this->getDeletedAt()->getTimestamp() > $timestamp)
+            if ($this->getDeletedAt() !== null && $this->getDeletedAt()->getTimestamp() > $timestamp)
             {
                 $obj->status = 'deleted';
             }
 
-            else if ($this->getUpdatedAt()->getTimestamp() > $timestamp)
+            else if ($this->getUpdatedAt() !== null && $this->getUpdatedAt()->getTimestamp() > $timestamp)
             {
                 $obj->status = 'modified';
             }
 
-            else if ($this->getCreatedAt()->getTimestamp() > $timestamp)
+            else if ($this->getCreatedAt() !== null && $this->getCreatedAt()->getTimestamp() > $timestamp)
             {
                 $obj->status = 'created';
             }
