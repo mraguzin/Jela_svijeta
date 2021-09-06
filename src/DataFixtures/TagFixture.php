@@ -11,7 +11,7 @@ class TagFixture extends BaseFixture
 
     private $slugger;
 
-    public function __construct(SlugService $slugger) //TODO: autowire the slugger so we don't have to copy this same function in every fixture!
+    public function __construct(SlugService $slugger)
     {
         parent::__construct();
         $this->slugger = $slugger;

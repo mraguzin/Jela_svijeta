@@ -58,11 +58,6 @@ class DishFixture extends BaseFixture implements DependentFixtureInterface
         {
             $dish->addTag($this->getReference('Tag_' . $index));
         }
-
-        // BaseFixture::foreachLocale(function(string $locale, &$faker) use ($dish, &$ii) {
-        //     $dish->translate(BaseFixture::localeToLanguage($locale))->setDescription($faker->text(self::MAX_FAKE_TEXT_LEN)); //TODO: fix repeating fakes
-        //     //$dish->translate(BaseFixture::localeToLanguage($locale))->setDescription((string)($ii++));
-        // });
         
     }
 

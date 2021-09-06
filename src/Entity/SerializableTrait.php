@@ -5,10 +5,11 @@ namespace App\Entity;
 use ReflectionClass;
 use ReflectionProperty;
 use Doctrine\ORM\PersistentCollection;
+use stdClass;
 
 trait SerializableTrait
 {
-    private function handleProperties(string $language, $timestamp, &$obj)
+    private function handleSubObjects(string $language, $timestamp, &$obj)
     {
         $rc1 = new ReflectionClass($this);
 
@@ -17,31 +18,26 @@ trait SerializableTrait
         {
             $name = $property->getName();
 
-            if (!$property->isStatic() && is_object($obj->$name))
+            if (!$property->isStatic() && is_object($this->$name))
             {
-                $type = get_class($obj->$name);
-                echo "name: $name | type: $type ";
-                $rc2 = new ReflectionClass($obj->$name);
+                $rc2 = new ReflectionClass($this->$name);
 
-                if ($rc2->implementsInterface('App\\Entity\\SerializableInterface'))
+                if ($rc2->implementsInterface('App\Entity\SerializableInterface'))
                 {
-                    echo "SERIALIZABLE: $name ";
-                    //$obj->$name = $obj->$name->getFullObject($language, $timestamp); // Serialize recursively
-                    $obj->$name = $obj->$name->getFullObject($language, $timestamp); // Serialize recursively
+                    $obj->$name = $this->$name->getFullObject($language, $timestamp); // Serialize recursively
                 }
 
-                else if ($rc2->getShortName() == 'PersistentCollection')
+                else if ($rc2->isSubclassOf('Doctrine\Common\Collections\Collection'))
                 {
-                    echo "SERIALIZABLE: $name ";
-                    foreach ($obj->$name as &$element)
+                    $obj->name = [];
+                    foreach ($this->$name as $element)
                     {
                         if (is_object($element))
                         {
-                            $type = get_class($element);
                             $rc2 = new ReflectionClass($element);
-                            if ($rc2->implementsInterface('App\\Entity\\SerializableInterface'))
+                            if ($rc2->implementsInterface('App\Entity\SerializableInterface'))
                             {
-                                $element = $element->getFullObject($language, $timestamp);
+                                $obj->$name[] = $element->getFullObject($language, $timestamp);
                             }
                         }
                     }
@@ -53,9 +49,20 @@ trait SerializableTrait
 
     public function getFullObject(string $language, $timestamp, array $ignoredFields = [], bool $json = false)
     {
-        $obj = $this;
+        array_push($ignoredFields, 'newTranslations', 'currentLocale', 'defaultLocale', 'deletedAt', 'createdAt', 'updatedAt', 'translatableentityclass',
+        'translatable', 'locale', 'name', '__initializer__', '__cloner__', '__isInitialized__');
+        $obj = new stdClass();
         $rc1 = new ReflectionClass($this);
-        echo "DISH CLASS NAME: " . $rc1->getName() . ' ';
+
+        $properties = $rc1->getProperties();
+        foreach ($properties as $property)
+        {
+            $propName = $property->getName();
+            if (!$property->isStatic() && !is_object($this->$propName))
+            {
+                $obj->$propName = $this->$propName;
+            }
+        }
 
         if ($rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface'))
         {
@@ -76,23 +83,23 @@ trait SerializableTrait
         if ($rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TimestampableInterface') && 
             $rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\SoftDeletableInterface') && $timestamp > 0)
         {
-            if ($obj->getCreatedAt()->getTimestamp() > $timestamp)
+            if ($this->getDeletedAt()->getTimestamp() > $timestamp)
             {
-                $obj->status = 'created';
+                $obj->status = 'deleted';
             }
 
-            else if ($obj->getUpdatedAt()->getTimestamp() > $timestamp)
+            else if ($this->getUpdatedAt()->getTimestamp() > $timestamp)
             {
                 $obj->status = 'modified';
             }
 
-            else if ($obj->getDeletedAt()->getTimestamp() > $timestamp)
+            else if ($this->getCreatedAt()->getTimestamp() > $timestamp)
             {
-                $obj->status = 'deleted';
+                $obj->status = 'created';
             }
         }
 
-        $this->handleProperties($language, $timestamp, $obj);
+        $this->handleSubObjects($language, $timestamp, $obj);
 
         foreach ($ignoredFields as $ignore)
         {

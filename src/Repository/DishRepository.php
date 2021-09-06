@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Dish;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
@@ -22,7 +23,7 @@ class DishRepository extends ServiceEntityRepository
 
     public function getNumberOfDishes(): int
     {
-        $dql = 'SELECT COUNT(d.id) FROM App\\Entity\\Dish d';
+        $dql = 'SELECT COUNT(d.id) FROM App\Entity\Dish d';
         $query = $this->getEntityManager()->createQuery($dql);
 
         return $query->getSingleScalarResult();
@@ -30,19 +31,21 @@ class DishRepository extends ServiceEntityRepository
 
     public function findAllFromRequest(array $fields)
     {
-        $dql = 'SELECT d FROM App\\Entity\\Dish d ';
+        $dql = 'SELECT d FROM App\Entity\Dish d ';
+        if (!empty($fields['category']))
+        {
+            $dql .= 'LEFT JOIN d.category c ';
+        }
 
         $hasWhere = false;
         if (!empty($fields['tags']))
         {
             $hasWhere = true;
-            $dql .= 'JOIN d.tags t JOIN d.category c WHERE (';
-            foreach ($fields['tags'] as $tag)
-            {
-                $dql .= "t.id=$tag AND ";
-            }
-
-            $dql .= '1=1) ';
+            $dql .= 'WHERE d.id IN
+                (SELECT d1.id FROM App\Entity\Dish d1 JOIN d1.tags t1
+                WHERE t1.id IN (';
+            $dql .= implode(',', $fields['tags']) . ') ';
+            $dql .= 'GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) = ' . count($fields['tags']) . ') ';
         }
 
         if (!empty($fields['category']))
@@ -79,7 +82,9 @@ class DishRepository extends ServiceEntityRepository
 
         if ($fields['diff_time'] > 0)
         {
-            $diff_time = $fields['diff_time'];
+            $time = new DateTime();
+            $time->setTimestamp($fields['diff_time']);
+            $time = $time->format('Y-m-d H:m:s');
 
             if (!$hasWhere)
             {
@@ -92,7 +97,7 @@ class DishRepository extends ServiceEntityRepository
                 $dql .= 'AND ';
             }
 
-            $dql .= "(TIMESTAMP(d.created_at) > $diff_time OR TIMESTAMP(d.updated_at) > $diff_time OR TIMESTAMP(d.deleted_at) > $diff_time) ";
+            $dql .= "(d.createdAt > '$time' OR d.updatedAt > '$time' OR d.deletedAt > '$time') ";
         }
 
         $query = $this->getEntityManager()->createQuery($dql);
@@ -108,64 +113,5 @@ class DishRepository extends ServiceEntityRepository
 
         $paginator = new Paginator($query);
         return $paginator;
-        // $query = $this->createQueryBuilder('d');
-
-        // if ($fields['category'] == 'NULL')
-        // {
-        //     $query = $query->andWhere("d.category_id is NULL");
-        // }
-
-        // else if ($fields['category'] == '!NULL')
-        // {
-        //     $query = $query->andWhere("d.category_id is not NULL");
-        // }
-
-        // else if ($fields['category'] !== null)
-        // {
-        //     $category = $fields['category'];
-        //     $query = $query->andWhere("d.category_id = $category");
-        // }
-
-        // if (!empty($fields['tags']))
-        // {
-        //     $query = $query->andWhere("d.id ")
-        //     //$qb = $this->createQueryBuilder('d');
-        //     foreach ($fields['tags'] as $tag)
-        //     {
-        //         //$qb->expr()->some()
-        //         a
-        //     }
-
-            
-        // }
     }
-
-    // /**
-    //  * @return Dish[] Returns an array of Dish objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('d')
-            ->andWhere('d.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('d.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Dish
-    {
-        return $this->createQueryBuilder('d')
-            ->andWhere('d.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

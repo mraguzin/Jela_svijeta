@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Language;
 use App\Repository\DishRepository;
 use App\Repository\LanguageRepository;
+use App\Service\ArrayUrlService;
 use App\Service\FakeDataGenerator;
 use App\Service\ValidatorService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,7 +22,7 @@ class DishController extends AbstractController
     /**
      * @Route("/meals", name="meals")
      */
-    public function meals(DishRepository $dishRepo, LanguageRepository $languageRepo, ValidatorService $validator, Request $request): JsonResponse
+    public function meals(ArrayUrlService $aus, DishRepository $dishRepo, LanguageRepository $languageRepo, ValidatorService $validator, Request $request): JsonResponse
     {
         $fields = $validator->validateFields($request, ['per_page', 'page', 'category', 'tags', 'with', 'lang', 'diff_time'],
                                                        ['integer', 'integer', 'string', 'array', 'array', 'string', 'integer'],
@@ -35,15 +36,10 @@ class DishController extends AbstractController
             throw new BadRequestHttpException("The language '" . $fields['lang'] . "' does not exist in the database!");
         }
 
-        // if ($fields['page'] === null)
+        // if ($fields['page'] * $fields['per_page'] > $numDishes)
         // {
         //     $fields['page'] = 1;
         // }
-
-        if ($fields['page'] * $fields['per_page'] > $numDishes)
-        {
-            $fields['page'] = $fields['page']-1;
-        }
 
         $dishes = $dishRepo->findAllFromRequest($fields);
         $ignored = array_diff(['ingredients', 'category', 'tags'], $fields['with']);
@@ -51,23 +47,24 @@ class DishController extends AbstractController
 
         $obj->meta = new stdClass();
         $obj->meta->currentPage = $fields['page'] ? $fields['page'] : 1;
-        $obj->meta->totalItems = $numDishes;
+        $obj->meta->totalItems = count($dishes);
         $obj->meta->itemsPerPage = $fields['per_page'];
-        $obj->meta->totalPages = $obj->meta->itemsPerPage ? $numDishes / $obj->meta->itemsPerPage : 1;
+        $obj->meta->totalPages = $obj->meta->itemsPerPage ? $obj->meta->totalItems / $obj->meta->itemsPerPage : 1;
 
         $obj->data = [];
 
         foreach ($dishes as $dish)
         {
             $obj->data[] = $dish->getFullObject($fields['lang'], $fields['diff_time'], $ignored, false);
-            //$obj->data[] = $dish;
         }
 
         $obj->links = new stdClass();
+        $escapedFields = $aus->escapeArray($fields);
+
         if ($obj->meta->currentPage > 1)
         {
-            $fields['page'] = $obj->meta->currentPage - 1;
-            $obj->links->prev = $this->generateUrl('meals', $fields);
+            $escapedFields['page'] = $obj->meta->currentPage - 1;
+            $obj->links->prev = $this->generateUrl('meals', $escapedFields);
         }
 
         else
@@ -77,17 +74,19 @@ class DishController extends AbstractController
 
         if ($obj->meta->currentPage < $obj->meta->totalPages)
         {
-            $fields['page'] = $obj->meta->currentPage + 1;
-            $obj->links->next = $this->generateUrl('meals', $fields);
+            $escapedFields['page'] = $obj->meta->currentPage + 1;
+            $obj->links->next = $this->generateUrl('meals', $escapedFields);
+
+            $escapedFields['page'] = $obj->meta->currentPage;
+            $obj->links->self = $this->generateUrl('meals', $escapedFields);
         }
 
         else
         {
             $obj->links->next = null;
+            $obj->links->self = null;
+            $obj->links->prev = null;
         }
-
-        $fields['page'] = $obj->meta->currentPage;
-        $obj->links->self = $this->generateUrl('meals', $fields);
 
         return new JsonResponse($obj);
     }

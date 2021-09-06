@@ -36,11 +36,20 @@ class ValidatorService
 
             if (gettype($field) != $fieldTypes[$i])
             {
-                echo gettype($field);
-                echo $fieldTypes[$i];
-                if (((gettype($field) != 'integer' && gettype($field) != 'double') || !is_numeric($field)))
+                if (!((($fieldTypes[$i] == 'integer' || $fieldTypes[$i] == 'double') && is_numeric($field)) || $fieldTypes[$i] == 'array'))
+                //if (((gettype($field) != 'integer' && gettype($field) != 'double') || !is_numeric($field)) && ($fieldTypes[$i] != 'array'))
                 {
                     throw new BadRequestHttpException($fieldNames[$i] . ' does not have the required type of ' . $fieldTypes[$i]);
+                }
+
+                if ($fieldTypes[$i] == 'integer')
+                {
+                    $field = (int)$field;
+                }
+
+                else if ($fieldTypes[$i] == 'double')
+                {
+                    $field = (double)$field;
                 }
             }            
 
@@ -52,12 +61,12 @@ class ValidatorService
             if ($fieldTypes[$i] == 'array')
             {
                 $field = explode(',', $field);
-                $keys = array_flip($field);
-                $allowedKeys = array_flip($allowedOrMin);
+                //$keys = array_flip($field);
+                $allowedKeys = array_flip($allowedOrMin[$i] ? $allowedOrMin[$i] : []);
 
                 if (!empty($allowedOrMin[$i]))
                 {
-                    foreach ($keys as $key)
+                    foreach ($field as $key)
                     {
                         if (!array_key_exists($key, $allowedKeys))
                         {
@@ -68,7 +77,6 @@ class ValidatorService
             }
 
             $result[$fieldNames[$i]] = $field;
-            
         }
 
         return $result;
