@@ -32,7 +32,7 @@ class FakeDataGenerator
         $generator->seed(FakeDataGenerator::SEED);
         $populator = new \Faker\ORM\Doctrine\Populator($generator);
 
-        for ($i = 0; $i < sizeof($entities); ++$i)
+        for ($i = 0; $i < count($entities); ++$i)
         {
             $populator->addEntity($entities[$i], $quantities[$i], [
                 'created_at' => null,

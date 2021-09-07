@@ -24,6 +24,8 @@ class MealController extends AbstractController
     private $languageRepo;
     private $validator;
 
+    private const DEFAULT_PER_PAGE = 5;
+
     public function __construct(ArrayUrlService $aus, MealRepository $dishRepo, LanguageRepository $languageRepo, ValidatorService $validator)
     {
         $this->aus          = $aus;
@@ -35,29 +37,31 @@ class MealController extends AbstractController
     /**
      * @Route("/meals", name="meals")
      */
-    public function meals(): JsonResponse
+    public function meals(Request $request): JsonResponse
     {
-        $fields = $this->validator->validateFields($_GET, ['per_page', 'page', 'category', 'tags', 'with', 'lang', 'diff_time'],
+        $fields = $this->validator->validateFields($request, ['per_page', 'page', 'category', 'tags', 'with', 'lang', 'diff_time'],
                                                        ['integer', 'integer', 'string', 'array', 'array', 'string', 'integer'],
                                                        [false, false, false, false, false, true, false],
                                                        [1, 1, 1, null, ['ingredients', 'category', 'tags'], null, 1]);
 
-        $numDishes = $this->dishRepo->getNumberOfDishes();
 
         if (!$this->languageRepo->languageExists($fields['lang']))
         {
             throw new BadRequestHttpException("The language '" . $fields['lang'] . "' does not exist in the database!");
         }
 
+        $fields['per_page'] = $fields['per_page'] ? $fields['per_page'] : self::DEFAULT_PER_PAGE;
+        $fields['page']     = $fields['page'] ? $fields['page'] : 1;
+
         $dishes = $this->dishRepo->findAllFromRequest($fields);
         $ignored = array_diff(['ingredients', 'category', 'tags'], $fields['with']);
-        $obj = new stdClass();
+        $obj = new class {};
 
-        $obj->meta = new stdClass();
-        $obj->meta->currentPage = $fields['page'] ? $fields['page'] : 1;
+        $obj->meta = new class {};
+        $obj->meta->currentPage = $fields['page'];
         $obj->meta->totalItems = count($dishes);
         $obj->meta->itemsPerPage = $fields['per_page'];
-        $obj->meta->totalPages = $obj->meta->itemsPerPage ? $obj->meta->totalItems / $obj->meta->itemsPerPage : 1;
+        $obj->meta->totalPages = ceil($obj->meta->itemsPerPage ? $obj->meta->totalItems / $obj->meta->itemsPerPage : 1);
 
         $obj->data = [];
 
@@ -66,7 +70,7 @@ class MealController extends AbstractController
             $obj->data[] = $dish->getFullObject($fields['lang'], $fields['diff_time'], $ignored, false);
         }
 
-        $obj->links = new stdClass();
+        $obj->links = new class {};
         $escapedFields = $this->aus->escapeArray($fields);
 
         if ($obj->meta->currentPage > 1)

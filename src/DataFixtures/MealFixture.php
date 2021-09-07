@@ -22,6 +22,7 @@ class MealFixture extends BaseFixture implements DependentFixtureInterface
     protected function doPerLocale($dish, string $locale, &$faker)
     {
         $dish->translate(BaseFixture::localeToLanguage($locale))->setDescription($faker->text(self::MAX_FAKE_TEXT_LEN));
+        $dish->translate(BaseFixture::localeToLanguage($locale))->setTitle($faker->name);
     }
 
     protected function entityFactory($dish, int $index)

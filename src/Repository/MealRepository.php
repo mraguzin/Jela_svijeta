@@ -8,7 +8,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
-
 class MealRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -26,6 +25,11 @@ class MealRepository extends ServiceEntityRepository
 
     public function findAllFromRequest(array $fields)
     {
+        $time = null;
+        $category = null;
+        $tags = [];
+
+        //$dql = 'SELECT PARTIAL d.{id, description, title, tags, ingredients, category} FROM App\Entity\Meal d ';// d, d.id FROM App\Entity\Meal d ';
         $dql = 'SELECT d FROM App\Entity\Meal d ';
         if (!empty($fields['category']))
         {
@@ -35,12 +39,14 @@ class MealRepository extends ServiceEntityRepository
         $hasWhere = false;
         if (!empty($fields['tags']))
         {
+            $tags = $fields['tags'];
+            
             $hasWhere = true;
             $dql .= 'WHERE d.id IN
                 (SELECT d1.id FROM App\Entity\Meal d1 JOIN d1.tags t1
-                WHERE t1.id IN (';
-            $dql .= implode(',', $fields['tags']) . ') ';
-            $dql .= 'GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) >= ' . count($fields['tags']) . ') ';
+                WHERE t1.id IN :tags GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) = :tagCount) ';
+            //$dql .= implode(',', $fields['tags']) . ') ';
+            //$dql .= 'GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) >= ' . count($fields['tags']) . ') ';
         }
 
         if (!empty($fields['category']))
@@ -64,14 +70,14 @@ class MealRepository extends ServiceEntityRepository
                 $dql .= 'IS NULL ';
             }
 
-            else if ($category == '!NULL')
+            elseif ($category == '!NULL')
             {
                 $dql .= 'IS NOT NULL ';
             }
 
             else
             {
-                $dql .= "= $category ";
+                $dql .= "= :category ";
             }
         }
 
@@ -92,21 +98,46 @@ class MealRepository extends ServiceEntityRepository
                 $dql .= 'AND ';
             }
 
-            $dql .= "(d.createdAt > '$time' OR d.updatedAt > '$time' OR d.deletedAt > '$time') ";
+            $dql .= '(d.createdAt > :time OR d.updatedAt > :time OR d.deletedAt > :time) ';
+        }
+
+        else
+        {
+            if (!$hasWhere)
+            {
+                $hasWhere = true;
+                $dql .= 'WHERE ';
+            }
+
+            else
+            {
+                $dql .= 'AND ';
+            }
+
+            $dql .= 'd.deletedAt IS NULL ';
         }
 
         $dql .= 'ORDER BY d.id ';
 
         $query = $this->getEntityManager()->createQuery($dql);
-        if ($fields['per_page'] > 0)
+        if (!empty($tags))
         {
-            $query->setMaxResults($fields['per_page']);
-
-            if ($fields['page'] > 0)
-            {
-                $query->setFirstResult(($fields['page']-1) * $fields['per_page']);
-            }
+            $query->setParameter('tags', $tags);
+            $query->setParameter('tagCount', count($tags));
         }
+
+        if ($category !== null)
+        {
+            $query->setParameter('category', $category);
+        }
+
+        if ($time !== null)
+        {
+            $query->setParameter('time', $time);
+        }
+
+        $query->setMaxResults($fields['per_page']);
+        $query->setFirstResult(($fields['page']-1) * $fields['per_page']);
 
         $paginator = new Paginator($query);
         return $paginator;

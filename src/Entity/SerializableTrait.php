@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use ReflectionClass;
 use stdClass;
 
@@ -25,7 +28,7 @@ trait SerializableTrait
                     $obj->$name = $this->$name->getFullObject($language, $timestamp); // Serialize recursively
                 }
 
-                else if ($rc2->isSubclassOf('Doctrine\Common\Collections\Collection'))
+                elseif ($rc2->isSubclassOf('Doctrine\Common\Collections\Collection'))
                 {
                     $obj->name = [];
                     foreach ($this->$name as $element)
@@ -45,11 +48,19 @@ trait SerializableTrait
         }
     }
 
+    private function getTranslatableId()
+    {
+        foreach ($this->translations as $translation)
+        {
+            return $translation->getTranslatable()->getId();
+        }
+    }
+
     public function getFullObject(string $language, $timestamp, array $ignoredFields = [], bool $json = false)
     {
         array_push($ignoredFields, 'newTranslations', 'currentLocale', 'defaultLocale', 'deletedAt', 'createdAt', 'updatedAt', 'translatableentityclass',
         'translatable', 'locale', 'name', '__initializer__', '__cloner__', '__isInitialized__');
-        $obj = new stdClass();
+        $obj = new class {};
         $rc1 = new ReflectionClass($this);
 
         $properties = $rc1->getProperties();
@@ -58,7 +69,16 @@ trait SerializableTrait
             $propName = $property->getName();
             if (!$property->isStatic() && !is_object($this->$propName))
             {
-                $obj->$propName = $this->$propName;
+                if ($propName == 'id' && $rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface'))
+                {
+                    $obj->id = $this->getTranslatableId();
+                }
+
+                else
+                {
+                    $obj->$propName = $this->$propName;
+                }
+                
             }
         }
 
@@ -70,13 +90,15 @@ trait SerializableTrait
             foreach ($methods as $method)
             {
                 $methodName = $method->getShortName();
-                if (substr($methodName, 0, 3) == 'get')
+                if (substr($methodName, 0, 3) == 'get' && $methodName != 'getId')
                 {
                     $fieldName = strtolower(substr($methodName, 3));
                     $obj->$fieldName = $this->translate($language)->$methodName();
                 }
             }
         }
+
+        $obj->status = 'created';
 
         if ($rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TimestampableInterface') && 
             $rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\SoftDeletableInterface') && $timestamp > 0)
@@ -86,14 +108,9 @@ trait SerializableTrait
                 $obj->status = 'deleted';
             }
 
-            else if ($this->getUpdatedAt() !== null && $this->getUpdatedAt()->getTimestamp() > $timestamp)
+            elseif ($this->getUpdatedAt() !== null && $this->getUpdatedAt()->getTimestamp() > $timestamp)
             {
                 $obj->status = 'modified';
-            }
-
-            else if ($this->getCreatedAt() !== null && $this->getCreatedAt()->getTimestamp() > $timestamp)
-            {
-                $obj->status = 'created';
             }
         }
 

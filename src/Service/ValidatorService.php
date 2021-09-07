@@ -2,18 +2,19 @@
 
 namespace App\Service;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ValidatorService
 {
-    public function validateFields(array $fields, array $fieldNames, array $fieldTypes, array $required, array $allowedOrMin = [])
+    public function validateFields(Request $request, array $fieldNames, array $fieldTypes, array $required, array $allowedOrMin = [])
     {
         $result = [];
 
-        for ($i = 0; $i < sizeof($fieldNames); ++$i)
+        for ($i = 0; $i < count($fieldNames); ++$i)
         {
-            //$field = $request->query->get($fieldNames[$i]);
-            $field = array_key_exists($fieldNames[$i], $fields) ? $fields[$fieldNames[$i]] : null;
+            $field = $request->query->get($fieldNames[$i]);
+            //$field = array_key_exists($fieldNames[$i], $fields) ? $fields[$fieldNames[$i]] : null;
             if ($field === null)
             {
                 if ($required[$i])
@@ -46,12 +47,12 @@ class ValidatorService
                     $field = (int)$field;
                 }
 
-                else if ($fieldTypes[$i] == 'double')
+                elseif ($fieldTypes[$i] == 'double')
                 {
                     $field = (double)$field;
                 }
 
-                else if ($fieldTypes[$i] == 'boolean')
+                elseif ($fieldTypes[$i] == 'boolean')
                 {
                     $field = (bool)$field;
                 }

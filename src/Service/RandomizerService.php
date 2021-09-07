@@ -10,7 +10,7 @@ class RandomizerService
         {
             $result = self::getRandomArray($count, $min, $max);
 
-            if (sizeof(array_unique($result)) == sizeof($result))
+            if (sizeof(array_unique($result)) == count($result))
             {
                 return $result;
             }
