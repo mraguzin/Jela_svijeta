@@ -11,7 +11,7 @@ final class MealsTest extends KernelTestCase
     private function test1($mealController)
     {
         $request = new Request(['lang'=>'de', 'per_page'=>2, 'page'=>2, 'with'=>'tags']);
-        $response = $mealController->meals($request);
+        $response = $mealController->meals($request)->getContent();
 
         $this->assertJson($response);
 
@@ -46,7 +46,7 @@ final class MealsTest extends KernelTestCase
     private function test2($mealController)
     {
         $request = new Request(['lang'=>'en', 'per_page'=>2, 'page'=>1, 'with'=>'tags,category', 'category'=>'NULL', 'tags'=>'91,94']);
-        $response = $mealController->meals($request);
+        $response = $mealController->meals($request)->getContent();
 
         $this->assertJson($response);
 
@@ -77,7 +77,7 @@ final class MealsTest extends KernelTestCase
 
         $this->assertNull($obj->links->prev);
         $this->assertNull($obj->links->next);
-        $this->assertEquals('/meals?per_page=2&page=1&categoty=NULL&tags=91,94&with=tags,category&lang=en', $obj->links->self);
+        $this->assertEquals('/meals?per_page=2&page=1&category=NULL&tags=91,94&with=tags,category&lang=en', $obj->links->self);
     }
 
     public function testMeals()
