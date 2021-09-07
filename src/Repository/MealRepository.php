@@ -84,6 +84,7 @@ class MealRepository extends ServiceEntityRepository
         if ($fields['diff_time'] > 0)
         {
             $time = new DateTime();
+            date_default_timezone_set('UTC');
             $time->setTimestamp($fields['diff_time']);
             $time = $time->format('Y-m-d H:m:s');
 
