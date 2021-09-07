@@ -26,13 +26,6 @@ class MealRepository extends ServiceEntityRepository
 
     public function findAllFromRequest(array $fields)
     {
-        // $dql = 'SELECT PARTIAL d.{id';
-        // foreach ($fields['with'] as $field)
-        // {
-        //     $dql .= ", $field";
-        // }
-
-        // $dql .= '} FROM App\Entity\Meal d ';
         $dql = 'SELECT d FROM App\Entity\Meal d ';
         if (!empty($fields['category']))
         {

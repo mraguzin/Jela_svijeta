@@ -35,9 +35,9 @@ class MealController extends AbstractController
     /**
      * @Route("/meals", name="meals")
      */
-    public function meals(Request $request): JsonResponse
+    public function meals(): JsonResponse
     {
-        $fields = $this->validator->validateFields($request, ['per_page', 'page', 'category', 'tags', 'with', 'lang', 'diff_time'],
+        $fields = $this->validator->validateFields($_GET, ['per_page', 'page', 'category', 'tags', 'with', 'lang', 'diff_time'],
                                                        ['integer', 'integer', 'string', 'array', 'array', 'string', 'integer'],
                                                        [false, false, false, false, false, true, false],
                                                        [1, 1, 1, null, ['ingredients', 'category', 'tags'], null, 1]);
