@@ -47,7 +47,7 @@ class MealRepository extends ServiceEntityRepository
                 (SELECT d1.id FROM App\Entity\Meal d1 JOIN d1.tags t1
                 WHERE t1.id IN (';
             $dql .= implode(',', $fields['tags']) . ') ';
-            $dql .= 'GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) = ' . count($fields['tags']) . ') ';
+            $dql .= 'GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) >= ' . count($fields['tags']) . ') ';
         }
 
         if (!empty($fields['category']))
