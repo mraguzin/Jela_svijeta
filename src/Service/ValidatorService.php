@@ -69,13 +69,11 @@ class ValidatorService
                 $field = explode(',', $field);
                 $field = $field != [''] ? $field : null;
 
-                $allowedKeys = array_flip($allowedOrMin[$i] ? $allowedOrMin[$i] : []);
-
                 if (!empty($allowedOrMin[$i]))
                 {
                     foreach ($field as $key)
                     {
-                        if (!array_key_exists($key, $allowedKeys))
+                        if (!in_array($key, $allowedOrMin[$i]))
                         {
                             throw new BadRequestHttpException($fieldNames[$i] . ' can only accept the following values: ' . implode(',', $allowedOrMin[$i]));
                         }
