@@ -2,7 +2,6 @@
 
 namespace App\DataFixtures;
 
-use App\Entity;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use ReflectionClass;
@@ -23,7 +22,6 @@ abstract class BaseFixture extends Fixture
     {
         foreach (self::LOCALES as $locale)
         {
-            //$f($locale, self::$fakers[$locale]);
             call_user_func_array($f, [$locale, &self::$fakers[$locale]]);
         }
     }
@@ -56,7 +54,7 @@ abstract class BaseFixture extends Fixture
         $this->loadData($om);
     }
 
-    protected function createMany(string $className, int $count)//, callable $factory)
+    protected function createMany(string $className, int $count)
     {
         $className = 'App\\Entity\\' . $className;
         $rc = new ReflectionClass($className);
@@ -65,7 +63,6 @@ abstract class BaseFixture extends Fixture
         for ($i = 0; $i < $count; ++$i)
         {
             $entity = new $className();
-            //$factory($entity, $i);
             
             if ($rc->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface'))
             {

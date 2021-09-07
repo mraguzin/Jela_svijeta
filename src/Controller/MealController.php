@@ -19,24 +19,37 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class MealController extends AbstractController
 {
+    private $aus;
+    private $dishRepo;
+    private $languageRepo;
+    private $validator;
+
+    public function __construct(ArrayUrlService $aus, MealRepository $dishRepo, LanguageRepository $languageRepo, ValidatorService $validator)
+    {
+        $this->aus          = $aus;
+        $this->dishRepo     = $dishRepo;
+        $this->languageRepo = $languageRepo;
+        $this->validator    = $validator;
+    }
+
     /**
      * @Route("/meals", name="meals")
      */
-    public function meals(ArrayUrlService $aus, MealRepository $dishRepo, LanguageRepository $languageRepo, ValidatorService $validator, Request $request): JsonResponse
+    public function meals(Request $request): JsonResponse
     {
-        $fields = $validator->validateFields($request, ['per_page', 'page', 'category', 'tags', 'with', 'lang', 'diff_time'],
+        $fields = $this->validator->validateFields($request, ['per_page', 'page', 'category', 'tags', 'with', 'lang', 'diff_time'],
                                                        ['integer', 'integer', 'string', 'array', 'array', 'string', 'integer'],
                                                        [false, false, false, false, false, true, false],
                                                        [1, 1, 1, null, ['ingredients', 'category', 'tags'], null, 1]);
 
-        $numDishes = $dishRepo->getNumberOfDishes();
+        $numDishes = $this->dishRepo->getNumberOfDishes();
 
-        if (!$languageRepo->languageExists($fields['lang']))
+        if (!$this->languageRepo->languageExists($fields['lang']))
         {
             throw new BadRequestHttpException("The language '" . $fields['lang'] . "' does not exist in the database!");
         }
 
-        $dishes = $dishRepo->findAllFromRequest($fields);
+        $dishes = $this->dishRepo->findAllFromRequest($fields);
         $ignored = array_diff(['ingredients', 'category', 'tags'], $fields['with']);
         $obj = new stdClass();
 
@@ -54,7 +67,7 @@ class MealController extends AbstractController
         }
 
         $obj->links = new stdClass();
-        $escapedFields = $aus->escapeArray($fields);
+        $escapedFields = $this->aus->escapeArray($fields);
 
         if ($obj->meta->currentPage > 1)
         {
@@ -73,13 +86,11 @@ class MealController extends AbstractController
             $obj->links->next = $this->generateUrl('meals', $escapedFields);
 
             $escapedFields['page'] = $obj->meta->currentPage;
-            //$obj->links->self = $this->generateUrl('meals', $escapedFields);
         }
 
         else
         {
             $obj->links->next = null;
-            //$obj->links->self = null;
             $obj->links->prev = null;
         }
 

@@ -26,6 +26,13 @@ class MealRepository extends ServiceEntityRepository
 
     public function findAllFromRequest(array $fields)
     {
+        // $dql = 'SELECT PARTIAL d.{id';
+        // foreach ($fields['with'] as $field)
+        // {
+        //     $dql .= ", $field";
+        // }
+
+        // $dql .= '} FROM App\Entity\Meal d ';
         $dql = 'SELECT d FROM App\Entity\Meal d ';
         if (!empty($fields['category']))
         {
@@ -94,6 +101,8 @@ class MealRepository extends ServiceEntityRepository
 
             $dql .= "(d.createdAt > '$time' OR d.updatedAt > '$time' OR d.deletedAt > '$time') ";
         }
+
+        $dql .= 'ORDER BY d.id ';
 
         $query = $this->getEntityManager()->createQuery($dql);
         if ($fields['per_page'] > 0)
