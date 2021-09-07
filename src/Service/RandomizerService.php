@@ -25,7 +25,7 @@ class RandomizerService
             $max = $count - 1;
         }
     
-        for ($i = 0; $i < $count; ++$i)
+        for ($i = 0; $i < $count; $i++)
         {
             $result[] = rand($min, $max);
         }

@@ -29,7 +29,6 @@ class MealRepository extends ServiceEntityRepository
         $category = null;
         $tags = [];
 
-        //$dql = 'SELECT PARTIAL d.{id, description, title, tags, ingredients, category} FROM App\Entity\Meal d ';// d, d.id FROM App\Entity\Meal d ';
         $dql = 'SELECT d FROM App\Entity\Meal d ';
         if (!empty($fields['category']))
         {
@@ -45,8 +44,6 @@ class MealRepository extends ServiceEntityRepository
             $dql .= 'WHERE d.id IN
                 (SELECT d1.id FROM App\Entity\Meal d1 JOIN d1.tags t1
                 WHERE t1.id IN :tags GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) = :tagCount) ';
-            //$dql .= implode(',', $fields['tags']) . ') ';
-            //$dql .= 'GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) >= ' . count($fields['tags']) . ') ';
         }
 
         if (!empty($fields['category']))
@@ -77,7 +74,7 @@ class MealRepository extends ServiceEntityRepository
 
             else
             {
-                $dql .= "= :category ";
+                $dql .= '= :category ';
             }
         }
 
@@ -86,7 +83,7 @@ class MealRepository extends ServiceEntityRepository
             $time = new DateTime();
             date_default_timezone_set('UTC');
             $time->setTimestamp($fields['diff_time']);
-            $time = $time->format('Y-m-d H:m:s');
+            $time = $time->format('Y-m-d H:i:s');
 
             if (!$hasWhere)
             {
@@ -138,7 +135,7 @@ class MealRepository extends ServiceEntityRepository
         }
 
         $query->setMaxResults($fields['per_page']);
-        $query->setFirstResult(($fields['page']-1) * $fields['per_page']);
+        $query->setFirstResult(($fields['page'] - 1) * $fields['per_page']);
 
         $paginator = new Paginator($query);
         return $paginator;

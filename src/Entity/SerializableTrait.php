@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Query\ResultSetMapping;
-use Doctrine\ORM\Query\ResultSetMappingBuilder;
+use Doctrine\Common\Collections\Collection;
+use Knp\DoctrineBehaviors\Contract\Entity\SoftDeletableInterface;
+use Knp\DoctrineBehaviors\Contract\Entity\TimestampableInterface;
+use Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface;
 use ReflectionClass;
-use stdClass;
 
 trait SerializableTrait
 {
@@ -21,22 +21,19 @@ trait SerializableTrait
 
             if (!$property->isStatic() && is_object($this->$name))
             {
-                $rc2 = new ReflectionClass($this->$name);
-
-                if ($rc2->implementsInterface('App\Entity\SerializableInterface'))
+                if ($this->$name instanceof SerializableInterface)
                 {
                     $obj->$name = $this->$name->getFullObject($language, $timestamp); // Serialize recursively
                 }
 
-                elseif ($rc2->isSubclassOf('Doctrine\Common\Collections\Collection'))
+                elseif ($this->$name instanceof Collection)
                 {
                     $obj->name = [];
                     foreach ($this->$name as $element)
                     {
                         if (is_object($element))
                         {
-                            $rc2 = new ReflectionClass($element);
-                            if ($rc2->implementsInterface('App\Entity\SerializableInterface'))
+                            if ($element instanceof SerializableInterface)
                             {
                                 $obj->$name[] = $element->getFullObject($language, $timestamp);
                             }
@@ -44,7 +41,6 @@ trait SerializableTrait
                     }
                 }
             }
-            
         }
     }
 
@@ -58,8 +54,23 @@ trait SerializableTrait
 
     public function getFullObject(string $language, $timestamp, array $ignoredFields = [], bool $json = false)
     {
-        array_push($ignoredFields, 'newTranslations', 'currentLocale', 'defaultLocale', 'deletedAt', 'createdAt', 'updatedAt', 'translatableentityclass',
-        'translatable', 'locale', 'name', '__initializer__', '__cloner__', '__isInitialized__');
+        array_push(
+            $ignoredFields,
+            'newTranslations',
+            'currentLocale',
+            'defaultLocale',
+            'deletedAt',
+            'createdAt',
+            'updatedAt',
+            'translatableentityclass',
+            'translatable',
+            'locale',
+            'name',
+            '__initializer__',
+            '__cloner__',
+            '__isInitialized__'
+        );
+
         $obj = new class {};
         $rc1 = new ReflectionClass($this);
 
@@ -69,7 +80,7 @@ trait SerializableTrait
             $propName = $property->getName();
             if (!$property->isStatic() && !is_object($this->$propName))
             {
-                if ($propName == 'id' && $rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface'))
+                if ($propName == 'id' && $this instanceof TranslatableInterface)
                 {
                     $obj->id = $this->getTranslatableId();
                 }
@@ -82,7 +93,7 @@ trait SerializableTrait
             }
         }
 
-        if ($rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface'))
+        if ($this instanceof TranslatableInterface)
         {
             $rc2 = new ReflectionClass('App\\Entity\\' . $rc1->getShortName() . 'Translation');
             $methods = $rc2->getMethods();
@@ -100,8 +111,7 @@ trait SerializableTrait
 
         $obj->status = 'created';
 
-        if ($rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TimestampableInterface') && 
-            $rc1->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\SoftDeletableInterface') && $timestamp > 0)
+        if ($this instanceof TimestampableInterface && $this instanceof SoftDeletableInterface && $timestamp > 0)
         {
             if ($this->getDeletedAt() !== null && $this->getDeletedAt()->getTimestamp() > $timestamp)
             {

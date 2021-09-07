@@ -13,9 +13,9 @@ final class MealsTest extends KernelTestCase
 
     private function test1($mealController)
     {
-        //$request = new Request(['lang'=>'de', 'per_page'=>2, 'page'=>2, 'with'=>'tags']);
-        $_GET = ['lang'=>'de', 'per_page'=>2, 'page'=>2, 'with'=>'tags'];
-        $response = $mealController->meals()->getContent();
+        $request = new Request(['lang' => 'de', 'per_page' => 2, 'page' => 2, 'with' => 'tags']);
+        //$_GET = ['lang'=>'de', 'per_page'=>2, 'page'=>2, 'with'=>'tags'];
+        $response = $mealController->meals($request)->getContent();
 
         $this->assertJson($response);
 
@@ -49,9 +49,9 @@ final class MealsTest extends KernelTestCase
 
     private function test2($mealController)
     {
-        //$request = new Request(['lang'=>'en', 'per_page'=>2, 'page'=>1, 'with'=>'tags,category', 'category'=>'NULL', 'tags'=>'91,94']);
-        $_GET = ['lang'=>'en', 'per_page'=>2, 'page'=>1, 'with'=>'tags,category', 'category'=>'NULL', 'tags'=>'91,94'];
-        $response = $mealController->meals()->getContent();
+        $request = new Request(['lang' => 'en', 'per_page' => 2, 'page' => 1, 'with' => 'tags,category', 'category' => 'NULL', 'tags' => '91,94']);
+        //$_GET = ['lang'=>'en', 'per_page'=>2, 'page'=>1, 'with'=>'tags,category', 'category'=>'NULL', 'tags'=>'91,94'];
+        $response = $mealController->meals($request)->getContent();
 
         $this->assertJson($response);
 

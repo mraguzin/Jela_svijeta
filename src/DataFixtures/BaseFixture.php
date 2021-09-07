@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface;
 use ReflectionClass;
 
 abstract class BaseFixture extends Fixture
@@ -60,11 +61,11 @@ abstract class BaseFixture extends Fixture
         $rc = new ReflectionClass($className);
         $shortName = $rc->getShortName();
 
-        for ($i = 0; $i < $count; ++$i)
+        for ($i = 0; $i < $count; $i++)
         {
             $entity = new $className();
             
-            if ($rc->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface'))
+            if ($entity instanceof TranslatableInterface)
             {
                 foreach (self::LOCALES as $locale)
                 {
@@ -77,7 +78,7 @@ abstract class BaseFixture extends Fixture
             $this->addReference($shortName . '_' . $i, $entity);
             $this->om->persist($entity);
 
-            if ($rc->implementsInterface('Knp\DoctrineBehaviors\Contract\Entity\TranslatableInterface'))
+            if ($entity instanceof TranslatableInterface)
             {
                 $entity->mergeNewTranslations();
             }

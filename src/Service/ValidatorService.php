@@ -11,10 +11,10 @@ class ValidatorService
     {
         $result = [];
 
-        for ($i = 0; $i < count($fieldNames); ++$i)
+        for ($i = 0; $i < count($fieldNames); $i++)
         {
             $field = $request->query->get($fieldNames[$i]);
-            //$field = array_key_exists($fieldNames[$i], $fields) ? $fields[$fieldNames[$i]] : null;
+
             if ($field === null)
             {
                 if ($required[$i])
@@ -37,24 +37,25 @@ class ValidatorService
 
             if (gettype($field) != $fieldTypes[$i])
             {
-                if (!((($fieldTypes[$i] == 'integer' || $fieldTypes[$i] == 'double') && is_numeric($field)) || $fieldTypes[$i] == 'array' || $fieldTypes[$i] == 'boolean'))
+                if (!((($fieldTypes[$i] == 'integer' || $fieldTypes[$i] == 'double')
+                 && is_numeric($field)) || $fieldTypes[$i] == 'array' || $fieldTypes[$i] == 'boolean'))
                 {
                     throw new BadRequestHttpException($fieldNames[$i] . ' does not have the required type of ' . $fieldTypes[$i]);
                 }
 
                 if ($fieldTypes[$i] == 'integer')
                 {
-                    $field = (int)$field;
+                    $field = (int) $field;
                 }
 
                 elseif ($fieldTypes[$i] == 'double')
                 {
-                    $field = (double)$field;
+                    $field = (double) $field;
                 }
 
                 elseif ($fieldTypes[$i] == 'boolean')
                 {
-                    $field = (bool)$field;
+                    $field = $field == 'true' ? true : false;
                 }
             }            
 
