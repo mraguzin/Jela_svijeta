@@ -8,23 +8,14 @@ class ArrayUrlService
     {
         $result = [];
 
-        foreach ($fields as $key=>$field)
-        {
-            if (is_array($field))
-            {
-                if (empty($field))
-                {
+        foreach ($fields as $key => $field) {
+            if (is_array($field)) {
+                if (empty($field)) {
                     unset($field[$key]);
-                }
-
-                else
-                {
+                } else {
                     $result[$key] = implode(',', $field);
                 }
-            }
-
-            else
-            {
+            } else {
                 $result[$key] = $field;
             }
         }

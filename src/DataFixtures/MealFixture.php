@@ -29,35 +29,27 @@ class MealFixture extends BaseFixture implements DependentFixtureInterface
     {
         static $seeded = false;
 
-        if (!$seeded)
-        {
+        if (!$seeded) {
             srand(self::SEED);
             $seeded = true;
         }
 
         $index = rand(0, CategoryFixture::NUM_CATEGORIES);
-        if ($index === CategoryFixture::NUM_CATEGORIES)
-        {
+        if ($index === CategoryFixture::NUM_CATEGORIES) {
             $dish->setCategory(null);
-        }
-
-        else
-        {
+        } else {
             $dish->setCategory($this->getReference('Category_' . $index));
         }
 
         $indices = $this->randomizer->getRandomArray(IngredientFixture::NUM_INGREDIENTS);
-        foreach ($indices as $index)
-        {
+        foreach ($indices as $index) {
             $dish->addIngredient($this->getReference('Ingredient_' . $index));
         }
 
         $indices = $this->randomizer->getRandomArray(TagFixture::NUM_TAGS);
-        foreach ($indices as $index)
-        {
+        foreach ($indices as $index) {
             $dish->addTag($this->getReference('Tag_' . $index));
         }
-        
     }
 
     protected function loadData(ObjectManager $om)

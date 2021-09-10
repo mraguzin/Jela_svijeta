@@ -43,8 +43,7 @@ class MealController extends AbstractController
         );
 
 
-        if (!$this->languageRepo->languageExists($fields['lang']))
-        {
+        if (!$this->languageRepo->languageExists($fields['lang'])) {
             throw new BadRequestHttpException("The language '" . $fields['lang'] . "' does not exist in the database!");
         }
 
@@ -53,9 +52,13 @@ class MealController extends AbstractController
 
         $dishes = $this->dishRepo->findAllFromRequest($fields);
         $ignored = array_diff(['ingredients', 'category', 'tags'], $fields['with']);
-        $obj = new class {};
+        $obj = new class
+        {
+        };
 
-        $obj->meta = new class {};
+        $obj->meta = new class
+        {
+        };
         $obj->meta->currentPage = $fields['page'];
         $obj->meta->totalItems = count($dishes);
         $obj->meta->itemsPerPage = $fields['per_page'];
@@ -63,35 +66,28 @@ class MealController extends AbstractController
 
         $obj->data = [];
 
-        foreach ($dishes as $dish)
-        {
+        foreach ($dishes as $dish) {
             $obj->data[] = $dish->getFullObject($fields['lang'], $fields['diff_time'], $ignored, false);
         }
 
-        $obj->links = new class {};
+        $obj->links = new class
+        {
+        };
         $escapedFields = $this->aus->escapeArray($fields);
 
-        if ($obj->meta->currentPage > 1)
-        {
+        if ($obj->meta->currentPage > 1) {
             $escapedFields['page'] = $obj->meta->currentPage - 1;
             $obj->links->prev = $this->generateUrl('meals', $escapedFields);
-        }
-
-        else
-        {
+        } else {
             $obj->links->prev = null;
         }
 
-        if ($obj->meta->currentPage < $obj->meta->totalPages)
-        {
+        if ($obj->meta->currentPage < $obj->meta->totalPages) {
             $escapedFields['page'] = $obj->meta->currentPage + 1;
             $obj->links->next = $this->generateUrl('meals', $escapedFields);
 
             $escapedFields['page'] = $obj->meta->currentPage;
-        }
-
-        else
-        {
+        } else {
             $obj->links->next = null;
             $obj->links->prev = null;
         }

@@ -15,26 +15,17 @@ trait SerializableTrait
         $rc1 = new ReflectionClass($this);
 
         $properties = $rc1->getProperties();
-        foreach ($properties as $property)
-        {
+        foreach ($properties as $property) {
             $name = $property->getName();
 
-            if (!$property->isStatic() && is_object($this->$name))
-            {
-                if ($this->$name instanceof SerializableInterface)
-                {
+            if (!$property->isStatic() && is_object($this->$name)) {
+                if ($this->$name instanceof SerializableInterface) {
                     $obj->$name = $this->$name->getFullObject($language, $timestamp); // Serialize recursively
-                }
-
-                elseif ($this->$name instanceof Collection)
-                {
+                } elseif ($this->$name instanceof Collection) {
                     $obj->name = [];
-                    foreach ($this->$name as $element)
-                    {
-                        if (is_object($element))
-                        {
-                            if ($element instanceof SerializableInterface)
-                            {
+                    foreach ($this->$name as $element) {
+                        if (is_object($element)) {
+                            if ($element instanceof SerializableInterface) {
                                 $obj->$name[] = $element->getFullObject($language, $timestamp);
                             }
                         }
@@ -46,8 +37,7 @@ trait SerializableTrait
 
     private function getTranslatableId()
     {
-        foreach ($this->translations as $translation)
-        {
+        foreach ($this->translations as $translation) {
             return $translation->getTranslatable()->getId();
         }
     }
@@ -71,38 +61,30 @@ trait SerializableTrait
             '__isInitialized__'
         );
 
-        $obj = new class {};
+        $obj = new class
+        {
+        };
         $rc1 = new ReflectionClass($this);
 
         $properties = $rc1->getProperties();
-        foreach ($properties as $property)
-        {
+        foreach ($properties as $property) {
             $propName = $property->getName();
-            if (!$property->isStatic() && !is_object($this->$propName))
-            {
-                if ($propName == 'id' && $this instanceof TranslatableInterface)
-                {
+            if (!$property->isStatic() && !is_object($this->$propName)) {
+                if ($propName == 'id' && $this instanceof TranslatableInterface) {
                     $obj->id = $this->getTranslatableId();
-                }
-
-                else
-                {
+                } else {
                     $obj->$propName = $this->$propName;
                 }
-                
             }
         }
 
-        if ($this instanceof TranslatableInterface)
-        {
+        if ($this instanceof TranslatableInterface) {
             $rc2 = new ReflectionClass('App\\Entity\\' . $rc1->getShortName() . 'Translation');
             $methods = $rc2->getMethods();
 
-            foreach ($methods as $method)
-            {
+            foreach ($methods as $method) {
                 $methodName = $method->getShortName();
-                if (str_starts_with('get', $methodName) && $methodName != 'getId')
-                {
+                if (str_starts_with('get', $methodName) && $methodName != 'getId') {
                     $fieldName = strtolower(substr($methodName, 3));
                     $obj->$fieldName = $this->translate($language)->$methodName();
                 }
@@ -111,33 +93,23 @@ trait SerializableTrait
 
         $obj->status = 'created';
 
-        if ($this instanceof TimestampableInterface && $this instanceof SoftDeletableInterface && $timestamp > 0)
-        {
-            if ($this->getDeletedAt() !== null && $this->getDeletedAt()->getTimestamp() > $timestamp)
-            {
+        if ($this instanceof TimestampableInterface && $this instanceof SoftDeletableInterface && $timestamp > 0) {
+            if ($this->getDeletedAt() !== null && $this->getDeletedAt()->getTimestamp() > $timestamp) {
                 $obj->status = 'deleted';
-            }
-
-            elseif ($this->getUpdatedAt() !== null && $this->getUpdatedAt()->getTimestamp() > $timestamp)
-            {
+            } elseif ($this->getUpdatedAt() !== null && $this->getUpdatedAt()->getTimestamp() > $timestamp) {
                 $obj->status = 'modified';
             }
         }
 
         $this->handleSubObjects($language, $timestamp, $obj);
 
-        foreach ($ignoredFields as $ignore)
-        {
+        foreach ($ignoredFields as $ignore) {
             unset($obj->$ignore);
         }
 
-        if ($json)
-        {
+        if ($json) {
             return json_encode($obj);
-        }
-
-        else
-        {
+        } else {
             return $obj;
         }
     }

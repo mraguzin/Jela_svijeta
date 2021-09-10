@@ -98,6 +98,5 @@ final class MealsTest extends KernelTestCase
 
         $this->test1($mealController);
         $this->test2($mealController);
-
     }
 }

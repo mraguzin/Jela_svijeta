@@ -33,6 +33,4 @@ class TagFixture extends BaseFixture
 
         $om->flush();
     }
-
-
 }

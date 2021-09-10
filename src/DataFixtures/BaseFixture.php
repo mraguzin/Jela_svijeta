@@ -21,8 +21,7 @@ abstract class BaseFixture extends Fixture
 
     public static function foreachLocale(callable $f)
     {
-        foreach (self::LOCALES as $locale)
-        {
+        foreach (self::LOCALES as $locale) {
             call_user_func_array($f, [$locale, &self::$fakers[$locale]]);
         }
     }
@@ -32,16 +31,13 @@ abstract class BaseFixture extends Fixture
 
     public function __construct()
     {
-        if (!self::$didInit)
-        {
+        if (!self::$didInit) {
             self::$didInit = true;
-            foreach (self::LOCALES as $locale)
-            {
+            foreach (self::LOCALES as $locale) {
                 self::$fakers[$locale] = \Faker\Factory::create($locale);
                 self::$fakers[$locale]->seed(self::SEED);
             }
         }
-        
     }
 
     abstract protected function loadData(ObjectManager $om);
@@ -61,14 +57,11 @@ abstract class BaseFixture extends Fixture
         $rc = new ReflectionClass($className);
         $shortName = $rc->getShortName();
 
-        for ($i = 0; $i < $count; $i++)
-        {
+        for ($i = 0; $i < $count; $i++) {
             $entity = new $className();
-            
-            if ($entity instanceof TranslatableInterface)
-            {
-                foreach (self::LOCALES as $locale)
-                {
+
+            if ($entity instanceof TranslatableInterface) {
+                foreach (self::LOCALES as $locale) {
                     $this->doPerLocale($entity, $locale, self::$fakers[$locale]);
                 }
             }
@@ -78,8 +71,7 @@ abstract class BaseFixture extends Fixture
             $this->addReference($shortName . '_' . $i, $entity);
             $this->om->persist($entity);
 
-            if ($entity instanceof TranslatableInterface)
-            {
+            if ($entity instanceof TranslatableInterface) {
                 $entity->mergeNewTranslations();
             }
         }

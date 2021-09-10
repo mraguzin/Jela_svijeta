@@ -49,8 +49,10 @@ final class ValidatorTest extends KernelTestCase
             ['name', 'lastname', 'age', 'prio', 'employed', 'awards'],
             ['string', 'string', 'integer', 'integer', 'boolean', 'array'],
             [true, true, true, false, false, false],
-            [null, null, 0, 0, null,
-            ['nano', 'micro', 'milli', 'kilo', 'mega', 'giga']]
+            [
+                null, null, 0, 0, null,
+                ['nano', 'micro', 'milli', 'kilo', 'mega', 'giga']
+            ]
         );
 
         $this->assertEquals('Giles', $result['name']);
@@ -64,7 +66,7 @@ final class ValidatorTest extends KernelTestCase
     public function testValidator()
     {
         $validator = static::getContainer()->get(ValidatorService::class);
-        
+
         $this->test1($validator);
         $this->test2($validator);
         $this->test3($validator);
