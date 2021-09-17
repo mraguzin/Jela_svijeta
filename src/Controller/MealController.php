@@ -53,43 +53,40 @@ class MealController extends AbstractController
 
         $dishes = $this->dishRepo->findAllFromRequest($fields);
         $ignored = array_diff(['ingredients', 'category', 'tags'], $fields['with']);
-        $obj = new class
-        {
-        };
+        $obj = [
+            'meta' => [
+                'currentPage'  => $fields['page'],
+                'totalItems'   => count($dishes),
+                'itemsPerPage' => $fields['per_page']
+            ],
+            'data' => []
+        ];
 
-        $obj->meta = new class {};
-        $obj->meta->currentPage = $fields['page'];
-        $obj->meta->totalItems = count($dishes);
-        $obj->meta->itemsPerPage = $fields['per_page'];
-        $obj->meta->totalPages = ceil($obj->meta->itemsPerPage ? $obj->meta->totalItems / $obj->meta->itemsPerPage : 1);
-
-        $obj->data = [];
+        $obj['meta']['totalPages'] = ceil($obj['meta']['itemsPerPage'] ? $obj['meta']['totalItems'] / $obj['meta']['itemsPerPage'] : 1);
 
         foreach ($dishes as $dish) {
-            $obj->data[] = $dish->getFullObject($fields['lang'], $fields['diff_time'], $ignored, false);
+            $obj['data'][] = $dish->getFullObject($fields['lang'], $fields['diff_time'], $ignored, false);
         }
 
-        $obj->links = new class {};
         $escapedFields = $this->aus->escapeArray($fields);
-
-        if ($obj->meta->currentPage > 1) {
-            $escapedFields['page'] = $obj->meta->currentPage - 1;
-            $obj->links->prev = $this->generateUrl('meals', $escapedFields);
+        if ($obj['meta']['currentPage'] > 1) {
+            $escapedFields['page'] = $obj['meta']['currentPage'] - 1;
+            $obj['links']['prev'] = $this->generateUrl('meals', $escapedFields, UrlGeneratorInterface::ABSOLUTE_URL);
         } else {
-            $obj->links->prev = null;
+            $obj['links']['prev'] = null;
         }
 
-        if ($obj->meta->currentPage < $obj->meta->totalPages) {
-            $escapedFields['page'] = $obj->meta->currentPage + 1;
-            $obj->links->next = $this->generateUrl('meals', $escapedFields);
+        if ($obj['meta']['currentPage'] < $obj['meta']['totalPages']) {
+            $escapedFields['page'] = $obj['meta']['currentPage'] + 1;
+            $obj['links']['next'] = $this->generateUrl('meals', $escapedFields, UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $escapedFields['page'] = $obj->meta->currentPage;
+            $escapedFields['page'] = $obj['meta']['currentPage'];
         } else {
-            $obj->links->next = null;
-            $obj->links->prev = null;
+            $obj['links']['next'] = null;
+            $obj['links']['prev'] = null;
         }
 
-        $obj->links->self = $this->generateUrl('meals', $escapedFields, UrlGeneratorInterface::ABSOLUTE_URL);
+        $obj['links']['self'] = $this->generateUrl('meals', $escapedFields, UrlGeneratorInterface::ABSOLUTE_URL);
 
         $json = json_encode($obj, JSON_PRETTY_PRINT);
         return new JsonResponse($json, 200, [], true);

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controller;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ErrorResponse extends JsonResponse

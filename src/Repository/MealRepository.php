@@ -41,7 +41,7 @@ class MealRepository extends ServiceEntityRepository
             $hasWhere = true;
             $dql .= 'WHERE d.id IN
                 (SELECT d1.id FROM App\Entity\Meal d1 JOIN d1.tags t1
-                WHERE t1.id IN :tags GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) = :tagCount) ';
+                WHERE t1.id IN (:tags) GROUP BY d1.id HAVING COUNT(DISTINCT t1.id) = :tagCount) ';
         }
 
         if (!empty($fields['category'])) {
@@ -97,7 +97,7 @@ class MealRepository extends ServiceEntityRepository
             $query->setParameter('tagCount', count($tags));
         }
 
-        if ($category !== null) {
+        if ($category !== null && $category !== 'NULL' && $category !== '!NULL') {
             $query->setParameter('category', $category);
         }
 

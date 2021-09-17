@@ -20,13 +20,13 @@ trait SerializableTrait
 
             if (!$property->isStatic() && is_object($this->$name)) {
                 if ($this->$name instanceof SerializableInterface) {
-                    $obj->$name = $this->$name->getFullObject($language, $timestamp); // Serialize recursively
+                    $obj[$name] = $this->$name->getFullObject($language, $timestamp); // Serialize recursively
                 } elseif ($this->$name instanceof Collection) {
-                    $obj->name = [];
+                    $obj[$name] = [];
                     foreach ($this->$name as $element) {
                         if (is_object($element)) {
                             if ($element instanceof SerializableInterface) {
-                                $obj->$name[] = $element->getFullObject($language, $timestamp);
+                                $obj[$name][] = $element->getFullObject($language, $timestamp);
                             }
                         }
                     }
@@ -53,6 +53,7 @@ trait SerializableTrait
             'createdAt',
             'updatedAt',
             'translatableentityclass',
+            'translations',
             'translatable',
             'locale',
             'name',
@@ -61,9 +62,7 @@ trait SerializableTrait
             '__isInitialized__'
         );
 
-        $obj = new class
-        {
-        };
+        $obj = [];
         $rc1 = new ReflectionClass($this);
 
         $properties = $rc1->getProperties();
@@ -71,9 +70,9 @@ trait SerializableTrait
             $propName = $property->getName();
             if (!$property->isStatic() && !is_object($this->$propName)) {
                 if ($propName == 'id' && $this instanceof TranslatableInterface) {
-                    $obj->id = $this->getTranslatableId();
+                    $obj['id'] = $this->getTranslatableId();
                 } else {
-                    $obj->$propName = $this->$propName;
+                    $obj[$propName] = $this->$propName;
                 }
             }
         }
@@ -86,25 +85,28 @@ trait SerializableTrait
                 $methodName = $method->getShortName();
                 if (substr($methodName, 0, 3) == 'get' && $methodName != 'getId') {
                     $fieldName = strtolower(substr($methodName, 3));
-                    $obj->$fieldName = $this->translate($language)->$methodName();
+                    $obj[$fieldName] = $this->translate($language)->$methodName();
                 }
             }
         }
 
-        $obj->status = 'created';
 
-        if ($this instanceof TimestampableInterface && $this instanceof SoftDeletableInterface && $timestamp > 0) {
-            if ($this->getDeletedAt() !== null && $this->getDeletedAt()->getTimestamp() > $timestamp) {
-                $obj->status = 'deleted';
-            } elseif ($this->getUpdatedAt() !== null && $this->getUpdatedAt()->getTimestamp() > $timestamp) {
-                $obj->status = 'modified';
+        if ($this instanceof TimestampableInterface && $this instanceof SoftDeletableInterface) {
+            $obj['status'] = 'created';
+            
+            if ($timestamp > 0) {
+                if ($this->getDeletedAt() !== null && $this->getDeletedAt()->getTimestamp() > $timestamp) {
+                    $obj['status'] = 'deleted';
+                } elseif ($this->getUpdatedAt() !== null && $this->getUpdatedAt()->getTimestamp() > $timestamp) {
+                    $obj['status'] = 'modified';
+                }
             }
         }
 
         $this->handleSubObjects($language, $timestamp, $obj);
 
-        foreach ($ignoredFields as $ignore) {
-            unset($obj->$ignore);
+        foreach ($ignoredFields as $ignored) {
+            unset($obj[$ignored]);
         }
 
         if ($json) {
