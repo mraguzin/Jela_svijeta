@@ -84,7 +84,7 @@ trait SerializableTrait
 
             foreach ($methods as $method) {
                 $methodName = $method->getShortName();
-                if (str_starts_with('get', $methodName) && $methodName != 'getId') {
+                if (substr($methodName, 0, 3) == 'get' && $methodName != 'getId') {
                     $fieldName = strtolower(substr($methodName, 3));
                     $obj->$fieldName = $this->translate($language)->$methodName();
                 }

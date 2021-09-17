@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class MealController extends AbstractController
 {
@@ -56,9 +57,7 @@ class MealController extends AbstractController
         {
         };
 
-        $obj->meta = new class
-        {
-        };
+        $obj->meta = new class {};
         $obj->meta->currentPage = $fields['page'];
         $obj->meta->totalItems = count($dishes);
         $obj->meta->itemsPerPage = $fields['per_page'];
@@ -70,9 +69,7 @@ class MealController extends AbstractController
             $obj->data[] = $dish->getFullObject($fields['lang'], $fields['diff_time'], $ignored, false);
         }
 
-        $obj->links = new class
-        {
-        };
+        $obj->links = new class {};
         $escapedFields = $this->aus->escapeArray($fields);
 
         if ($obj->meta->currentPage > 1) {
@@ -92,7 +89,7 @@ class MealController extends AbstractController
             $obj->links->prev = null;
         }
 
-        $obj->links->self = $this->generateUrl('meals', $escapedFields);
+        $obj->links->self = $this->generateUrl('meals', $escapedFields, UrlGeneratorInterface::ABSOLUTE_URL);
 
         $json = json_encode($obj, JSON_PRETTY_PRINT);
         return new JsonResponse($json, 200, [], true);

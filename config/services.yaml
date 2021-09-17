@@ -7,6 +7,10 @@ parameters:
     doctrine_behaviors_timestampable_date_field_type: "datetimetz"
 
 services:
+    App\EventListener\ExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+            
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.

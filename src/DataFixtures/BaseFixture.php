@@ -10,7 +10,7 @@ use ReflectionClass;
 abstract class BaseFixture extends Fixture
 {
     private ObjectManager $om;
-    //public const LANGUAGES = ['en', 'it', 'de'];
+
     public const LOCALES   = ['en_US', 'it_IT', 'de_DE'];
     public const SEED      = 5621265;
 

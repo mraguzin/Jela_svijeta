@@ -13,10 +13,10 @@ class MealFixture extends BaseFixture implements DependentFixtureInterface
 
     private $randomizer;
 
-    public function __construct(RandomizerService $urs)
+    public function __construct(RandomizerService $randomizer)
     {
         parent::__construct();
-        $this->randomizer = $urs;
+        $this->randomizer = $randomizer;
     }
 
     protected function doPerLocale($dish, string $locale, &$faker)
